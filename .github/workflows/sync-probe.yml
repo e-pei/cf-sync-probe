@@ -1,0 +1,22 @@
+# 実験用: 自動同期の「反映の部分」だけを再現する。
+# GITHUB_TOKEN で main に commit を push する → Workers Builds が反応して再デプロイするか、を見る。
+name: sync-probe
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '23 3 * * *'
+permissions:
+  contents: write
+jobs:
+  stamp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 刻印を更新して push
+        run: |
+          echo "stamp $(date -u +%Y-%m-%dT%H:%M:%SZ) by ${GITHUB_ACTOR} run=${GITHUB_RUN_ID}" > src/stamp.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/stamp.txt
+          git commit -m "chore: 刻印を更新（実験）"
+          git push
